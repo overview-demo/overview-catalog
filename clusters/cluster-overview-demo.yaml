@@ -1,0 +1,14 @@
+apiVersion: veecode.backstage.io/v1alpha1
+kind: Cluster
+metadata:
+  name: "cluster-overview-demo"
+  environment:
+    domain: cluster-overview-experience.vkpr.platform.vee.codes
+    ingress_type: kong
+  annotations:
+    github.com/project-slug: overview-demo/overview-catalog
+spec:
+  type: ec2
+  lifecycle: experimental
+  owner: "group:default/admin"
+  environment: 'environment:default/environment-vkdr-local'

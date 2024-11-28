@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: petclinic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: overview-demo/overview-catalogg
+    kong-manager/service-name: vkdr.petclinic.80                   
+    kong-manager/instance: cluster-overview-demo
+spec:
+  type: service
+  lifecycle: experimental
+  owner: admin
