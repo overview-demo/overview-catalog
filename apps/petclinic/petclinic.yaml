@@ -6,7 +6,9 @@ metadata:
     backstage.io/techdocs-ref: dir:.
     github.com/project-slug: overview-demo/overview-catalogg
     kong-manager/service-name: vkpr.spring-petclinic.80                   
-    kong-manager/instance: cluster-overview-demo
+    kong-manager/instance: cluster-overview-experience
+    grafana/dashboard-selector: "app-exemple-platform-k8s"
+    grafana/alert-label-selector: "alertname=app-exemple-platform-k8s"    
 spec:
   type: service
   lifecycle: experimental
