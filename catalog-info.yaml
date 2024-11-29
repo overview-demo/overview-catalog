@@ -5,9 +5,9 @@ metadata:
   description: Importing templates, apis, environments, clusters and teams
 spec:
   targets:
-    - ./clusters/cluster-overview-demo.yaml
     - ./apps/petclinic/petclinic.yaml
     - ./environments/environment-overview-demo.yaml
     # - ./templates/templates.yaml
+    # - ./clusters/cluster-overview-demo.yaml
 
 
