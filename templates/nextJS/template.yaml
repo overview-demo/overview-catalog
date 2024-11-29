@@ -32,7 +32,7 @@ spec:
           title: Owner
           type: string
           description: Owner of the component
-          default: "group:default/demo"        
+          default: "group:default/admin"        
           ui:field: OwnerPicker
           ui:options:
             allowedKinds:
@@ -49,6 +49,8 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+            allowedOwners:
+              - overview-demo
         visibility:
           title: Repository visibility
           type: string
