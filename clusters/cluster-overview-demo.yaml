@@ -1,7 +1,7 @@
 apiVersion: veecode.backstage.io/v1alpha1
 kind: Cluster
 metadata:
-  name: "cluster-overview-demo"
+  name: "cluster-overview-experience"
   environment:
     domain: cluster-overview-experience.vkpr.platform.vee.codes
     ingress_type: kong
