@@ -6,7 +6,7 @@ PetClinic is a sample application developed for educational purposes, demonstrat
 
 Access the application through the following link:
 
-- [PetClinic - Local Environment](http://petclinic.localhost:8000)
+- [PetClinic - Environment](https://petclinic.cluster-overview-experience.vkpr.platform.vee.codes)
 
 ## Registration Features
 
