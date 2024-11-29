@@ -4,7 +4,7 @@ metadata:
   name: petclinic
   annotations:
     backstage.io/techdocs-ref: dir:.
-    github.com/project-slug: overview-demo/overview-catalogg
+    github.com/project-slug: overview-demo/overview-catalog
     kong-manager/service-name: vkpr.spring-petclinic.80                   
     kong-manager/instance: cluster-overview-experience
     grafana/dashboard-selector: "petclinic"
