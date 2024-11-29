@@ -1,0 +1,157 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: spec_project
+  title: Spec Project
+  description: Kong/Kubernetes Artifacts generator via Spec
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - platform-templates
+    - kong
+    - kubernetes
+spec:
+  owner: veecode/platform
+  type: devops
+  parameters:
+    ### Project Configuration
+    - title: Catalog Details
+      required:
+        - componentId
+        - owner
+      properties:
+        componentId:
+          title: Project name
+          type: string
+          description: Name of the project. ex Viacep_app.
+          pattern: '^([a-z0-9]|[.]|[_]|[-])*$'
+          ui:autofocus: true
+          ui:field: EntityNamePicker
+        description:
+          title: Description
+          type: string
+          ui:widget: textarea
+          ui:options:
+            rows: 1
+          description: Tell us more about your project
+          default: "Artifacts generator via Spec."
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+    ### Upload Spec
+    - title: Upload Openapi 3 File
+      properties:
+        UploadSpec:
+          title: Upload the Spec Openapi 3 File
+          description: "Drag and drop or click anywhere below and add spec file that will be used in the project. \U0001F4C3"
+          type: string
+          ui:field: UploadFilePicker
+          ui:options:
+            format: yaml
+          ui:backstage:
+            review:
+              show: false
+    ### Cluster Configuration
+    - title: Cluster Settings
+      properties:
+        clusterResource:
+          title: Cluster Settings
+          description: 'Select the cluster that will be used in this project from the resource catalog'
+          type: object
+          ui:field: ResourcePicker
+          ui:options:
+            catalogFilter:
+              kind: [Cluster]
+              type: ec2 #filter by ec2 cluster type
+          ui:backstage:
+            review:
+              show: false
+              ### Spec Configuration
+    - title: Spec Configuration
+      properties:
+        specTags:
+          title: Tags
+          type: string
+          description: Inputs tags separated by comma(,)
+    ### Location Configuration
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          description: Choose a location to create the SpecProject Pipeline
+          reuseName: componentId
+          ui:field: RepoUrlSelector
+          ui:options:
+            allowedHosts:
+              - github.com
+            allowedOwners:
+              - overview-demo
+        visibility:
+          title: Repository visibility
+          type: string
+          enum:
+            - public
+            - private
+          enumNames:
+            - 'Public'
+            - 'Private'
+          default: private
+  steps:
+    - id: writeFile
+      name: Create File
+      action: veecode-platform:extensions:createFile
+      input:
+        path: ./openapi-swagger.yaml
+        content: ${{ parameters.UploadSpec }}
+        format: yaml
+    - id: template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          componentId: ${{ parameters.componentId }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          #Cluster configuration 
+          cluster_name: ${{ parameters.clusterResource.name }}
+          cluster_type: ${{ parameters.clusterResource.cluster_type }}
+          cluster_public_ip: ${{ parameters.clusterResource.public_ip }}
+          domain: ${{ parameters.clusterResource.domain }}
+          #Spec configuration
+          specTags: ${{ parameters.specTags }}
+          #location configuration      
+          repoUrl: ${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}
+          host: ${{ parameters.repoUrl | parseRepoUrl | pick('host') }}
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        allowedHosts:
+          - github.com
+        description: Spec Name ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: ${{ parameters.visibility }}
+        defaultBranch: validation
+        protectDefaultBranch: false
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
