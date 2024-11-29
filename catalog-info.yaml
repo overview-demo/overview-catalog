@@ -7,7 +7,7 @@ spec:
   targets:
     - ./apps/petclinic/petclinic.yaml
     - ./environments/environment-overview-demo.yaml
-    # - ./templates/templates.yaml
+     - ./templates/templates.yaml
     # - ./clusters/cluster-overview-demo.yaml
 
 
