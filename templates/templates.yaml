@@ -5,7 +5,7 @@ metadata:
   description: A collection of all Platform templates
 spec:
   targets:
-    # - ./nextJS/template.yaml
+    - ./nextJS/template.yaml
     # - ./github-pages/blog/template.yaml
     # - ./spec_project/template.yaml
 
