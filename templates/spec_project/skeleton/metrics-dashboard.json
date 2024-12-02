@@ -948,7 +948,6 @@
         "timezone": "",
         "title": "Kong Simplified Metrics - ${{ values.componentId }}",
         "weekStart": ""
-
     },
     "folderUid": "ce5bxgwx301s0d",
     "message": "Deploy dashboard",

@@ -174,10 +174,6 @@ jobs:
       - name: Getting uid from Grafana's datasources
         continue-on-error: true
         run: |
-          export UID_TRACE_DASHBOARD=$(curl -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}" --url ${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/datasources | jq '.[] | select(.type == "tempo")'.uid)
-          echo "UID_TRACE = $UID_TRACE_DASHBOARD" 
-          echo "UID_TRACE=$UID_TRACE_DASHBOARD" >> $GITHUB_ENV
-
           export UID_METRICS_DASHBOARD=$(curl -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}" --url ${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/datasources | jq '.[] | select(.type == "prometheus")'.uid)
           echo "UID_METRICS = $UID_METRICS_DASHBOARD" 
           echo "UID_METRICS=$UID_METRICS_DASHBOARD" >> $GITHUB_ENV
@@ -186,7 +182,6 @@ jobs:
         continue-on-error: true
         run: |
           jq '(.dashboard.panels[].datasource | select(.type == "prometheus")).uid |= ${{'${{'}} env.UID_METRICS ${{'}}'}}' "metrics-dashboard.json" > ./dashboards/metrics-dashboard.json
-          jq '(.dashboard.panels[].datasource | select(.type == "tempo")).uid |= ${{'${{'}} env.UID_TRACE ${{'}}'}}' "tracing-dashboards.json" > ./dashboards/metrics-dashboard.json
       
       - name: Deploy dashboards
         continue-on-error: true      
