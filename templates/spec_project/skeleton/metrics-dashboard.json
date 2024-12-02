@@ -6,7 +6,7 @@
             "builtIn": 1,
             "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir"
             },
             "enable": true,
             "hide": true,
@@ -141,7 +141,7 @@
             "dashes": false,
             "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir"
             },
             "fieldConfig": {
             "defaults": {
@@ -234,7 +234,7 @@
             "collapsed": false,
             "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir"
             },
             "gridPos": {
             "h": 1,
@@ -254,7 +254,7 @@
             "dashes": false,
             "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir"
             },
             "fieldConfig": {
             "defaults": {
@@ -372,7 +372,7 @@
             "dashes": false,
             "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir"
             },
             "fieldConfig": {
             "defaults": {
@@ -488,7 +488,7 @@
             "dashes": false,
             "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir"
             },
             "fieldConfig": {
             "defaults": {
@@ -601,7 +601,7 @@
             "collapsed": false,
             "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir"
             },
             "gridPos": {
             "h": 1,
@@ -623,7 +623,7 @@
             "dashes": false,
             "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir"
             },
             "fill": 1,
             "fillGradient": 0,
@@ -715,7 +715,7 @@
             "dashes": false,
             "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir"
             },
             "fieldConfig": {
             "defaults": {
@@ -811,7 +811,7 @@
             "dashes": false,
             "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir"
             },
             "fieldConfig": {
             "defaults": {
