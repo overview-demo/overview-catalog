@@ -43,3 +43,34 @@ jobs:
            sed -i "s|0.0.0.0|${{'${{'}} env.Host ${{'}}'}}|g" ~/.kube/config
            kubectl delete -f ./k8s/kubernetes.yaml -n app
       {%- endif %}          
+
+      - name: Check grafana url
+        continue-on-error: true
+        run: |
+          export GRAFANA_URL=${{'${{'}} secrets.GRAFANA_API_URL ${{'}}'}}
+          echo "CHECKED_URL=${GRAFANA_URL%/}"
+          echo "CHECKED_URL=${GRAFANA_URL%/}" >> $GITHUB_ENV
+          mkdir dashboards
+
+      - name: Delete old Dashboards from project
+        continue-on-error: true
+        run: |
+          TAG="${{values.componentId}}"
+          # Passo 1: Verificar se existem painéis com a tag específica
+          response=$(curl -k -s -o /dev/null -w "%{http_code}" -X GET "${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/search?tag=${TAG}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}")
+          if [ "$response" -ne 200 ]; then
+              echo "Não foram encontrados painéis com a tag '${TAG}'. Nenhum painel será excluído."
+              exit 0
+          fi
+          # Passo 2: Obter lista de UIDs dos painéis com a tag específica
+          panel_uids=$(curl -k -s -X GET "${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/search?tag=${TAG}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}" | jq -r '.[] | .uid')
+          
+          # Passo 3: Excluir cada painel obtido no passo 1
+          for panel_uid in $panel_uids; do
+              response=$(curl -k -s -o /dev/null -w "%{http_code}" -X DELETE "${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/dashboards/uid/${panel_uid}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}")
+              if [ "$response" -eq 200 ]; then
+                  echo "Painel com ID ${panel_uid} excluído com sucesso."
+              else
+                  echo "Erro ao excluir o painel com UID ${panel_uid}. Status code: ${response}"
+              fi
+          done

@@ -12,6 +12,8 @@ metadata:
     kong-manager/service-name: app.${{ values.componentId }}.80
     kong-manager/instance: ${{ values.cluster_name }}
     kong-manager/spec : openapi-swagger.yaml
+    grafana/dashboard-selector: "${{ values.componentId }}"
+    grafana/alert-label-selector: "alertname=${{ values.componentId }}"        
 spec:
   type: devops
   lifecycle: experimental

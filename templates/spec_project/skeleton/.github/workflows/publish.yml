@@ -139,4 +139,63 @@ jobs:
           commit_author: veecode-bot<github-admin@vee.codes>
           commit_message: "Publish api and kubernetes.yaml"
           push_options: '--force'
+        
+      - name: Check grafana url
+        continue-on-error: true
+        run: |
+          export GRAFANA_URL=${{'${{'}} secrets.GRAFANA_API_URL ${{'}}'}}
+          echo "CHECKED_URL=${GRAFANA_URL%/}"
+          echo "CHECKED_URL=${GRAFANA_URL%/}" >> $GITHUB_ENV
+          mkdir dashboards
 
+      - name: Delete old Dashboards from project
+        continue-on-error: true
+        run: |
+          TAG="${{values.componentId}}"
+          # Passo 1: Verificar se existem painéis com a tag específica
+          response=$(curl -k -s -o /dev/null -w "%{http_code}" -X GET "${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/search?tag=${TAG}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}")
+          if [ "$response" -ne 200 ]; then
+              echo "Não foram encontrados painéis com a tag '${TAG}'. Nenhum painel será excluído."
+              exit 0
+          fi
+          # Passo 2: Obter lista de UIDs dos painéis com a tag específica
+          panel_uids=$(curl -k -s -X GET "${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/search?tag=${TAG}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}" | jq -r '.[] | .uid')
+          
+          # Passo 3: Excluir cada painel obtido no passo 1
+          for panel_uid in $panel_uids; do
+              response=$(curl -k -s -o /dev/null -w "%{http_code}" -X DELETE "${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/dashboards/uid/${panel_uid}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}")
+              if [ "$response" -eq 200 ]; then
+                  echo "Painel com ID ${panel_uid} excluído com sucesso."
+              else
+                  echo "Erro ao excluir o painel com UID ${panel_uid}. Status code: ${response}"
+              fi
+          done
+                    
+      - name: Getting uid from Grafana's datasources
+        continue-on-error: true
+        run: |
+          export UID_TRACE_DASHBOARD=$(curl -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}" --url ${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/datasources | jq '.[] | select(.type == "tempo")'.uid)
+          echo "UID_TRACE = $UID_TRACE_DASHBOARD" 
+          echo "UID_TRACE=$UID_TRACE_DASHBOARD" >> $GITHUB_ENV
+
+          export UID_METRICS_DASHBOARD=$(curl -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}" --url ${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/datasources | jq '.[] | select(.type == "prometheus")'.uid)
+          echo "UID_METRICS = $UID_METRICS_DASHBOARD" 
+          echo "UID_METRICS=$UID_METRICS_DASHBOARD" >> $GITHUB_ENV
+
+      - name: Changing uid of dashboard 
+        continue-on-error: true
+        run: |
+          jq '(.dashboard.panels[].datasource | select(.type == "prometheus")).uid |= ${{'${{'}} env.UID_METRICS ${{'}}'}}' "metrics-dashboard.json" > ./dashboards/metrics-dashboard.json
+          jq '(.dashboard.panels[].datasource | select(.type == "tempo")).uid |= ${{'${{'}} env.UID_TRACE ${{'}}'}}' "tracing-dashboards.json" > ./dashboards/metrics-dashboard.json
+      
+      - name: Deploy dashboards
+        continue-on-error: true      
+        run: |
+          for dashboard in ./dashboards/*.json; do
+            echo "Deploying $dashboard"
+            curl -k -X POST -d @$dashboard \
+              -H "Accept: application/json" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{'${{'}}  secrets.GRAFANA_API_TOKEN ${{'}}'}}" \
+              --url ${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/dashboards/db
+          done
