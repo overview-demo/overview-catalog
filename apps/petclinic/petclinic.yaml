@@ -7,8 +7,6 @@ metadata:
     github.com/project-slug: overview-demo/overview-catalog
     kong-manager/service-name: platform.spring-petclinic.80                   
     kong-manager/instance: cluster-overview-demo
-    grafana/dashboard-selector: "petclinic"
-    grafana/alert-label-selector: "alertname=petclinic"    
 spec:
   type: service
   lifecycle: experimental
