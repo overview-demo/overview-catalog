@@ -28,49 +28,14 @@ jobs:
           echo "${{'${{'}} secrets.KEYPAIR ${{'}}'}}" > cert.pem
           chmod 600 cert.pem
 
-      - name: Generate kube config with k3s  		
+      - name: Getting ec2 IP as HOST  		
         run: |
           HOST=`aws ec2 describe-instances --filters 'Name=tag:Name,Values=${{ values.cluster_name }}' --output text --query 'Reservations[*].Instances[*].PublicIpAddress'`
-          ssh -i ./cert.pem -o StrictHostKeyChecking=no $USERNAME@$HOST "mkdir -p .kube && k3d kubeconfig get ${{ values.cluster_name }} > config"
           echo "Host=$HOST" >> $GITHUB_ENV
 
       - name: 
         run: |
-           mkdir -p ~/.kube
-           scp -i ./cert.pem -o StrictHostKeyChecking=no $USERNAME@${{'${{'}} env.Host ${{'}}'}}:config ~/.kube/config
-           CERTIFICATE=`cat  ~/.kube/config |grep certificate-authority-data `
-           sed -i "s|$CERTIFICATE|    insecure-skip-tls-verify: true|g" ~/.kube/config
-           sed -i "s|0.0.0.0|${{'${{'}} env.Host ${{'}}'}}|g" ~/.kube/config
-           kubectl delete -f ./k8s/kubernetes.yaml -n app
+          mkdir -p ~/.kube
+          scp -i ./cert.pem -o StrictHostKeyChecking=no $USERNAME@${{'${{'}} env.Host ${{'}}'}}:~/.kube/config ~/.kube/config
+          kubectl delete -f ./k8s/kubernetes.yaml -n app
       {%- endif %}          
-
-      - name: Check grafana url
-        continue-on-error: true
-        run: |
-          export GRAFANA_URL=${{'${{'}} secrets.GRAFANA_API_URL ${{'}}'}}
-          echo "CHECKED_URL=${GRAFANA_URL%/}"
-          echo "CHECKED_URL=${GRAFANA_URL%/}" >> $GITHUB_ENV
-          mkdir dashboards
-
-      - name: Delete old Dashboards from project
-        continue-on-error: true
-        run: |
-          TAG="${{values.componentId}}"
-          # Passo 1: Verificar se existem painéis com a tag específica
-          response=$(curl -k -s -o /dev/null -w "%{http_code}" -X GET "${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/search?tag=${TAG}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}")
-          if [ "$response" -ne 200 ]; then
-              echo "Não foram encontrados painéis com a tag '${TAG}'. Nenhum painel será excluído."
-              exit 0
-          fi
-          # Passo 2: Obter lista de UIDs dos painéis com a tag específica
-          panel_uids=$(curl -k -s -X GET "${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/search?tag=${TAG}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}" | jq -r '.[] | .uid')
-          
-          # Passo 3: Excluir cada painel obtido no passo 1
-          for panel_uid in $panel_uids; do
-              response=$(curl -k -s -o /dev/null -w "%{http_code}" -X DELETE "${{'${{'}} env.CHECKED_URL ${{'}}'}}/api/dashboards/uid/${panel_uid}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}")
-              if [ "$response" -eq 200 ]; then
-                  echo "Painel com ID ${panel_uid} excluído com sucesso."
-              else
-                  echo "Erro ao excluir o painel com UID ${panel_uid}. Status code: ${response}"
-              fi
-          done
