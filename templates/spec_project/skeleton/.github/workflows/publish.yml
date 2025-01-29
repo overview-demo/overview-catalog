@@ -8,7 +8,7 @@ on:
 
 env:
   PROJECT_NAME: "${{ values.componentId }}"
-  HOST_NAME: "${{ values.cluster_name }}.${{ values.domain }}"
+  HOST_NAME: "${{ values.domain }}"
   CORS_ORIGIN_LIST: "https://devportal-homolog.apr.vee.codes,https://devportal.apr.vee.codes,https://devportal.overview.platform.vee.codes/"
 {%- if values.cluster_type == "ec2" %}
   PORT: 6550
