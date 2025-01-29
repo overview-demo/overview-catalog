@@ -1,6 +1,10 @@
 name: spec-project
-on: 
+
+on:  
   workflow_dispatch:
+  push:
+    branches:
+      - validation
 
 env:
   PROJECT_NAME: "${{ values.componentId }}"
